@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model Contact {
+  id String @id @default(cuid())
+  name String 
+  phone String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Material {
+  id String @id @default(cuid())
+  name String
+  price Decimal
+  Stock Int
+  ReportUseMaterials ReportUseMaterial[] @relation("MaterialToReportUseMaterial")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ReportUseMaterial {
+  id String @id @default(cuid())
+  materialId String
+  material Material @relation("MaterialToReportUseMaterial", fields: [materialId], references: [id])
+  desc String
+  qty Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([materialId])
+
+}
+
+model Product {
+  id String @id @default(cuid())
+  name String
+  price Decimal
+  stock Int
+  orders Order[] @relation("ProductToOrder")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id String @id @default(cuid())
+  customerId String
+  customer Customer @relation("CustomerToOrder", fields: [customerId], references: [id])
+  productId String
+  product Product @relation("ProductToOrder", fields: [productId], references: [id])
+  status String
+  qty Int
+  desc String @default("")
+  paymentType String @default("")
+  receiver String @default("")
+  deliveryService String? @default("")
+  noResi String? @default("")
+  address String? @default("")
+  dateOrder DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+
+  @@index([customerId])
+  @@index([productId])
+}
+
+model Customer {
+  id String @id @default(cuid())
+  name String
+  address String
+  phone String
+  orders Order[] @relation("CustomerToOrder")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
